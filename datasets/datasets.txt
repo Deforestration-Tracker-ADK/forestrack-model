@@ -1,5 +1,0 @@
-1. LandCoverNet (https://registry.mlhub.earth/10.34911/rdnt.d2ce8i/)
-2. DynamicEarthNet Challenge (http://www.classic.grss-ieee.org/earthvision2021/challenge.html)
-3. EOPatches (http://eo-learn.sentinel-hub.com/)
-4. DSTL satellite imagery (https://www.kaggle.com/c/dstl-satellite-imagery-feature-detection/data)(additionally complicated)
-5. SEN12MS (https://mediatum.ub.tum.de/1474000)
