@@ -279,4 +279,6 @@ if __name__ == '__main__':
             "Mean_burn_index": np.mean(burn_index_lis),
         }
 
+        print(stat_lis)
+
         break
