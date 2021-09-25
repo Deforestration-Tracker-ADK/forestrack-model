@@ -17,7 +17,7 @@ load_dotenv()
 
 resolution = 10
 needed_bands = ['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B8A', 'B08', 'B09', "B10", 'B11', 'B12']
-parallel = 2
+parallel = 20
 
 geo_data_dir = "geo_data"
 district_geojson_dir = os.path.join(geo_data_dir, "district")
@@ -281,8 +281,8 @@ if __name__ == '__main__':
         geo_json_file = os.path.join(district_geojson_dir, district)
         bbox_splitter = read_json_and_break_into_bbox(geo_json_file)
 
-        bbox_list = bbox_splitter.get_bbox_list()[:10]
-        info_list = bbox_splitter.get_info_list()[:10]
+        bbox_list = bbox_splitter.get_bbox_list()
+        info_list = bbox_splitter.get_info_list()
 
         area_stat_lis = []
         ndvi_lis = []
