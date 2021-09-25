@@ -17,7 +17,7 @@ load_dotenv()
 
 resolution = 10
 needed_bands = ['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B8A', 'B08', 'B09', "B10", 'B11', 'B12']
-parallel = 20
+parallel = 10
 
 geo_data_dir = "geo_data"
 district_geojson_dir = os.path.join(geo_data_dir, "district")
