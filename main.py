@@ -1,14 +1,17 @@
+import os
+from datetime import datetime, timedelta
+
+import numpy as np
+import psycopg2
+from dotenv import load_dotenv
+from sentinelhub import MimeType, CRS, SentinelHubRequest, SentinelHubDownloadClient, DataCollection, bbox_to_dimensions
 from sentinelhub import UtmZoneSplitter, SHConfig
 from sentinelhub import read_data
 from shapely.geometry import shape
-from datetime import datetime, timedelta
-from sentinelhub import MimeType, CRS, SentinelHubRequest, SentinelHubDownloadClient, DataCollection, bbox_to_dimensions
-import numpy as np
-import os
 from tensorflow.keras.initializers import RandomNormal, HeUniform
+from tensorflow.keras.layers import Input, Conv2D, Conv2DTranspose, Activation, Dropout, BatchNormalization, LeakyReLU, \
+    Concatenate, ReLU
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Conv2D, Conv2DTranspose, Activation, Dropout, BatchNormalization, LeakyReLU, Concatenate, ReLU
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -233,6 +236,39 @@ def prediction_to_area(model_pred, factor=1e-4):
     ]
 
 
+def insert_stat_to_database(stats, district):
+    """ insert a new vendor into the vendors table """
+    sql = """INSERT INTO forest_stats_foreststats(district, created_at, updated_at, water, artificial_bare_ground, artificial_natural_ground, 
+    woody, non_woody_cultivated, non_woody_natural, mean_ndvi, mean_burn_index)
+             VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id;"""
+    conn = None
+    stat_id = None
+    try:
+        # connect to the PostgreSQL database
+        conn = psycopg2.connect(os.environ.get('DATABASE_URL'))
+        # create a new cursor
+        cur = conn.cursor()
+        # execute the INSERT statement
+        cur.execute(sql, (
+            district, datetime.now(), datetime.now(), stats["Water"], stats["Artificial_Bare_Ground"],
+            stats["Artificial_Natural_Ground"],
+            stats["Woody"],
+            stats["Non_Woody_Cultivated"], stats["Non_Woody_Natural"], stats["Mean_NDVI"], stats["Mean_burn_index"],))
+        # get the generated id back
+        stat_id = cur.fetchone()[0]
+        # commit the changes to the database
+        conn.commit()
+        # close communication with the database
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error.message)
+    finally:
+        if conn is not None:
+            conn.close()
+
+    return stat_id
+
+
 if __name__ == '__main__':
     district_geojsons = os.listdir(district_geojson_dir)
     model = define_generator(32, (256, 256, 12))
@@ -275,10 +311,10 @@ if __name__ == '__main__':
             "Woody": area_stat_lis[3],
             "Non_Woody_Cultivated": area_stat_lis[4],
             "Non_Woody_Natural": area_stat_lis[5],
-            "Mean_ndvi": np.mean(ndvi_lis),
+            "Mean_NDVI": np.mean(ndvi_lis),
             "Mean_burn_index": np.mean(burn_index_lis),
         }
 
         print(stat_lis)
-
+        insert_stat_to_database(stat_lis, district_name)
         break
