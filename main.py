@@ -215,13 +215,13 @@ def transform_to_model_input(image_stack):
 
 def calculate_ndvi(image_stack):
     ndvi = (image_stack[:, 7, :, :] - image_stack[:, 3, :, :]) / (image_stack[:, 7, :, :] + image_stack[:, 3, :, :])
-    return ndvi
+    return np.mean(ndvi)
 
 
 def calculate_burn_index(image_stack):
     burn_index = (image_stack[:, 8, :, :] - image_stack[:, 12, :, :]) / (
             image_stack[:, 8, :, :] + image_stack[:, 12, :, :])
-    return burn_index
+    return np.mean(burn_index)
 
 
 def prediction_to_area(model_pred, factor=1e-4):
