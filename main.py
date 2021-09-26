@@ -317,4 +317,3 @@ if __name__ == '__main__':
 
         print(stat_lis)
         insert_stat_to_database(stat_lis, district_name)
-        break
