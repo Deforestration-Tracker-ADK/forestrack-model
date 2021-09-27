@@ -125,7 +125,7 @@ def get_sort_band(img_arr, axs=2):
     return sorted_img
 
 
-def generate_cld_less(sorted_arr, min_limit=0, max_limit=-5):
+def generate_cld_less(sorted_arr, min_limit=0, max_limit=-2):
     avg_arr = np.mean(sorted_arr[:, :, min_limit:max_limit, :, :], axis=2)
     # print(avg_arr.shape)
     return avg_arr
@@ -137,7 +137,7 @@ def remove_clds(image_stack):
     return image_stack
 
 
-def get_date_slots(no_days_back=90, n_chunks=6):
+def get_date_slots(no_days_back=90, n_chunks=3):
     start = datetime.now() - timedelta(days=no_days_back)
     end = datetime.now()
     tdelta = (end - start) / n_chunks
