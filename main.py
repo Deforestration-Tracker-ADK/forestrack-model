@@ -224,7 +224,7 @@ def calculate_burn_index(image_stack):
     return np.mean(burn_index)
 
 
-def prediction_to_area(model_pred, factor=1e-4):
+def prediction_to_area(model_pred, factor=1.6e-3):
     model_pred = np.argmax(model_pred, axis=3)
     return [
         np.sum(model_pred == 0) * factor + np.sum(model_pred == 3) * factor,
