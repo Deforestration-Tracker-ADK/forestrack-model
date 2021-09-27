@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import datetime, timedelta
 
@@ -17,9 +18,10 @@ load_dotenv()
 
 resolution = 40
 needed_bands = ['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B8A', 'B08', 'B09', "B10", 'B11', 'B12']
-parallel = 20
+parallel = 10
 
 geo_data_dir = "geo_data"
+log_dir = "logs"
 district_geojson_dir = os.path.join(geo_data_dir, "district")
 model_file = os.path.join("model_saves", "unet_epochs_50.h5")
 
@@ -214,14 +216,15 @@ def transform_to_model_input(image_stack):
 
 
 def calculate_ndvi(image_stack):
-    ndvi = (image_stack[:, 7, :, :] - image_stack[:, 3, :, :]) / (image_stack[:, 7, :, :] + image_stack[:, 3, :, :])
-    return np.mean(ndvi)
+    ndvi = np.sum(image_stack[:, 7, :, :] - image_stack[:, 3, :, :]) / np.sum(
+        image_stack[:, 7, :, :] + image_stack[:, 3, :, :])
+    return ndvi
 
 
 def calculate_burn_index(image_stack):
-    burn_index = (image_stack[:, 8, :, :] - image_stack[:, 12, :, :]) / (
-            image_stack[:, 8, :, :] + image_stack[:, 12, :, :])
-    return np.mean(burn_index)
+    burn_index = np.sum(image_stack[:, 8, :, :] - image_stack[:, 12, :, :]) / np.sum(
+        image_stack[:, 8, :, :] + image_stack[:, 12, :, :])
+    return burn_index
 
 
 def prediction_to_area(model_pred, factor=1.6e-3):
@@ -270,6 +273,10 @@ def insert_stat_to_database(stats, district):
 
 
 if __name__ == '__main__':
+
+    if not os.path.exists(log_dir):
+        os.mkdir(log_dir)
+
     district_geojsons = os.listdir(district_geojson_dir)
     model = define_generator(32, (256, 256, 12))
     model.load_weights(model_file)
@@ -277,7 +284,12 @@ if __name__ == '__main__':
     day_slots = get_date_slots()
 
     for district in district_geojsons:
+
+        if district in os.listdir(log_dir):
+            continue
+
         district_name = district.split(".")[0]
+
         geo_json_file = os.path.join(district_geojson_dir, district)
         bbox_splitter = read_json_and_break_into_bbox(geo_json_file, distance_of_image=(2560 * 4, 2560 * 4))
 
@@ -304,6 +316,7 @@ if __name__ == '__main__':
             burn_index_lis.append(calculate_burn_index(cld_less_images))
 
         area_stat_lis = np.sum(area_stat_lis, axis=0)
+
         stat_lis = {
             "Water": area_stat_lis[0],
             "Artificial_Bare_Ground": area_stat_lis[1],
@@ -311,9 +324,15 @@ if __name__ == '__main__':
             "Woody": area_stat_lis[3],
             "Non_Woody_Cultivated": area_stat_lis[4],
             "Non_Woody_Natural": area_stat_lis[5],
-            "Mean_NDVI": np.mean(ndvi_lis),
-            "Mean_burn_index": np.mean(burn_index_lis),
+            "Mean_NDVI": abs(np.mean(ndvi_lis)),
+            "Mean_burn_index": abs(np.mean(burn_index_lis)),
         }
 
         print(stat_lis)
         insert_stat_to_database(stat_lis, district_name)
+
+        with open(os.path.join(log_dir, district), "w+") as f0:
+            json.dump({"run": True}, f0)
+
+    for district in os.listdir(log_dir):
+        os.remove(os.path.join(log_dir, district))
