@@ -15,7 +15,7 @@ from tensorflow.keras.models import Model
 
 load_dotenv()
 
-resolution = 10
+resolution = 40
 needed_bands = ['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B8A', 'B08', 'B09', "B10", 'B11', 'B12']
 parallel = 20
 
@@ -279,7 +279,7 @@ if __name__ == '__main__':
     for district in district_geojsons:
         district_name = district.split(".")[0]
         geo_json_file = os.path.join(district_geojson_dir, district)
-        bbox_splitter = read_json_and_break_into_bbox(geo_json_file)
+        bbox_splitter = read_json_and_break_into_bbox(geo_json_file, distance_of_image=(2560 * 4, 2560 * 4))
 
         bbox_list = bbox_splitter.get_bbox_list()
         info_list = bbox_splitter.get_info_list()
