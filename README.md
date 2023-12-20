@@ -18,6 +18,9 @@ We use a base UNET model trained on a NASA dataset as the segmentation model, th
 
 ### Model Results
 
+Left Side :- <b>Model Prediction</b>
+Right Side :- <b>Actual GeoMap</b>
+
 ![input](DOCS/images/forestrack.png)
 ![input](DOCS/images/forestrack2.png)
 ![input](DOCS/images/forestrack3.png)
